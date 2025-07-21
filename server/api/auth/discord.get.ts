@@ -1,6 +1,11 @@
+import type { AppUser } from "~~/types/auth";
+import { PrismaClient } from "@/generated/prisma";
+
+const prisma = new PrismaClient();
+
 export default defineOAuthDiscordEventHandler({
   async onSuccess(event, { user, tokens }) {
-    await setUserSession(event, {
+    const session = await setUserSession(event, {
       user: {
         discordId: user.id,
         name: user.username,
@@ -9,6 +14,36 @@ export default defineOAuthDiscordEventHandler({
       },
       provider: "discord",
     });
+    const sessionUser: AppUser = session.user as AppUser;
+
+    const existingAccount = await prisma.account.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider: "discord",
+          providerAccountId: sessionUser.discordId!,
+        },
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!existingAccount) {
+      await prisma.user.create({
+        data: {
+          email: sessionUser.email,
+          name: sessionUser.name,
+          avatarUrl: sessionUser.avatarUrl,
+          account: {
+            create: {
+              provider: "discord",
+              providerAccountId: sessionUser.discordId!,
+            },
+          },
+        },
+      });
+    }
+
     return sendRedirect(event, "/");
   },
 });
