@@ -2,7 +2,7 @@
 const { clear } = useUserSession();
 await clear();
 
-const logout = () => {
+const returnToHome = () => {
   const router = useRouter();
   router.replace("/");
 };
@@ -14,7 +14,7 @@ const logout = () => {
       <h1 class="text-2xl font-bold mb-4">Vous êtes déconnecté</h1>
       <p class="mb-4">Merci d'avoir utilisé notre service.</p>
       <button
-        @click="logout"
+        @click="returnToHome"
         class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
       >
         Retour à l'accueil

@@ -29,16 +29,6 @@
             external
             class="w-full text-white bg-[#5865F2] hover:bg-[#4752C4] active:bg-[#3C4D99]"
           />
-          <!-- Google sign button -->
-          <UButton
-            to="/api/auth/google"
-            icon="devicon:google"
-            label="Login with Google"
-            color="neutral"
-            size="xl"
-            class="w-full bg-black text-white hover:bg-black active:bg-black"
-            external
-          />
         </div>
       </div>
     </div>
