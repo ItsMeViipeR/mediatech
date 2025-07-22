@@ -1,7 +1,5 @@
-import { PrismaClient } from "~/generated/prisma";
-import { AppUser } from "~~/types/auth";
-
-const prisma = new PrismaClient();
+import { prisma } from "~~/server/lib/prisma";
+import type { AppUser } from "~~/types/auth";
 
 export default defineOAuthGitHubEventHandler({
   async onSuccess(event, { user, tokens }) {

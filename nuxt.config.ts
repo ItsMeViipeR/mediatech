@@ -9,4 +9,9 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
   css: ["~/assets/css/main.css"],
+  nitro: {
+    replace: {
+      "import * as process": "import * as processUnused",
+    },
+  },
 });
