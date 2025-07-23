@@ -7,9 +7,14 @@ import {
   primaryKey,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { randomUUID } from "crypto";
+import { nanoid } from "nanoid";
 
 export const users = pgTable("User", {
-  id: text("id").primaryKey().default("cuid()"), // à remplacer par uuid() si tu veux
+  id: text("id")
+    .primaryKey()
+    .notNull()
+    .$default(() => nanoid()),
   email: text("email").unique(),
   name: text("name"),
   avatarUrl: text("avatarUrl"),
@@ -22,7 +27,10 @@ export const users = pgTable("User", {
 export const accounts = pgTable(
   "Account",
   {
-    id: text("id").primaryKey().default("cuid()"),
+    id: text("id")
+      .primaryKey()
+      .notNull()
+      .$default(() => nanoid()),
     userId: text("userId").unique().notNull(),
     provider: text("provider").notNull(),
     providerAccountId: text("providerAccountId").notNull(),
@@ -40,7 +48,10 @@ export const accounts = pgTable(
 );
 
 export const posts = pgTable("Post", {
-  id: text("id").primaryKey().default("cuid()"),
+  id: text("id")
+    .primaryKey()
+    .notNull()
+    .$default(() => nanoid()),
   title: text("title").notNull(),
   content: text("content"),
   published: boolean("published").default(false),

@@ -25,3 +25,6 @@ logs
 
 #/app/generated/prisma
 prisma/migrations
+
+# drizzle
+drizzle/**/*.*
