@@ -1,5 +1,7 @@
+import { db } from "~~/db/db";
+import { accounts, users } from "~~/db/schema";
+import { eq, and } from "drizzle-orm";
 import type { AppUser } from "~~/types/auth";
-import { prisma } from "~~/server/lib/prisma";
 
 export default defineOAuthDiscordEventHandler({
   async onSuccess(event, { user, tokens }) {
@@ -12,7 +14,37 @@ export default defineOAuthDiscordEventHandler({
       },
       provider: "discord",
     });
-    //const sessionUser: AppUser = session.user as AppUser;
+
+    const sessionUser: AppUser = session.user as AppUser;
+
+    const existingAccount = await db.query.accounts.findFirst({
+      where: and(
+        eq(accounts.provider, "discord"),
+        eq(accounts.providerAccountId, sessionUser.discordId!.toString())
+      ),
+      with: {
+        user: true,
+      },
+    });
+
+    if (!existingAccount) {
+      const insertedUser = await db
+        .insert(users)
+        .values({
+          email: sessionUser.email!,
+          name: sessionUser.login,
+          avatarUrl: sessionUser.avatarUrl,
+        })
+        .returning();
+
+      const newUserId = insertedUser[0].id;
+
+      await db.insert(accounts).values({
+        provider: "discord",
+        providerAccountId: sessionUser.discordId!.toString(),
+        userId: newUserId,
+      });
+    }
 
     return sendRedirect(event, "/");
   },
