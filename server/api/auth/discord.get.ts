@@ -12,35 +12,7 @@ export default defineOAuthDiscordEventHandler({
       },
       provider: "discord",
     });
-    const sessionUser: AppUser = session.user as AppUser;
-
-    const existingAccount = await prisma.account.findUnique({
-      where: {
-        provider_providerAccountId: {
-          provider: "discord",
-          providerAccountId: sessionUser.discordId!,
-        },
-      },
-      include: {
-        user: true,
-      },
-    });
-
-    if (!existingAccount) {
-      await prisma.user.create({
-        data: {
-          email: sessionUser.email,
-          name: sessionUser.name,
-          avatarUrl: sessionUser.avatarUrl,
-          account: {
-            create: {
-              provider: "discord",
-              providerAccountId: sessionUser.discordId!,
-            },
-          },
-        },
-      });
-    }
+    //const sessionUser: AppUser = session.user as AppUser;
 
     return sendRedirect(event, "/");
   },

@@ -1,4 +1,6 @@
-import { prisma } from "~~/server/lib/prisma";
+import { db } from "~~/db/db";
+import { accounts, users } from "~~/db/schema";
+import { eq, and } from "drizzle-orm";
 import type { AppUser } from "~~/types/auth";
 
 export default defineOAuthGitHubEventHandler({
@@ -15,31 +17,32 @@ export default defineOAuthGitHubEventHandler({
 
     const sessionUser: AppUser = session.user as AppUser;
 
-    const existingAccount = await prisma.account.findUnique({
-      where: {
-        provider_providerAccountId: {
-          provider: "github",
-          providerAccountId: sessionUser.githubId!.toString(),
-        },
-      },
-      include: {
+    const existingAccount = await db.query.accounts.findFirst({
+      where: and(
+        eq(accounts.provider, "github"),
+        eq(accounts.providerAccountId, sessionUser.githubId!.toString())
+      ),
+      with: {
         user: true,
       },
     });
 
     if (!existingAccount) {
-      await prisma.user.create({
-        data: {
-          email: sessionUser.email,
+      const insertedUser = await db
+        .insert(users)
+        .values({
+          email: sessionUser.email!,
           name: sessionUser.login,
           avatarUrl: sessionUser.avatarUrl,
-          account: {
-            create: {
-              provider: "github",
-              providerAccountId: sessionUser.githubId!.toString(),
-            },
-          },
-        },
+        })
+        .returning();
+
+      const newUserId = insertedUser[0].id;
+
+      await db.insert(accounts).values({
+        provider: "github",
+        providerAccountId: sessionUser.githubId!.toString(),
+        userId: newUserId,
       });
     }
 
